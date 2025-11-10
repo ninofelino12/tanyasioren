@@ -1,1 +1,82 @@
-hai beb
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Gemini AI Form</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        textarea { width: 100%; height: 100px; margin-bottom: 10px; }
+        #response { margin-top: 20px; padding: 15px; border: 1px solid #ccc; white-space: pre-wrap; background-color: #f7f7f7; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+
+    <h1>Kirim Prompt ke Gemini 2.0 Flash</h1>
+
+    <form id="aiForm">
+        <label for="userPrompt">Masukkan Prompt Anda:</label>
+        <textarea id="userPrompt" required>Jelaskan cara kerja AI dalam beberapa kalimat.</textarea>
+        
+        <button type="submit">Kirim Prompt</button>
+    </form>
+
+    <div id="response">
+        Hasil akan ditampilkan di sini...
+    </div>
+
+    <script>
+        document.getElementById('aiForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const promptText = document.getElementById('userPrompt').value;
+            const responseDiv = document.getElementById('response');
+            responseDiv.innerHTML = 'Memproses...';
+
+            // CATATAN PENTING: Kunci API ini (YOUR_API_KEY) TIDAK boleh diletakkan 
+            // di sini di aplikasi sungguhan karena ini adalah kode frontend!
+            // Harusnya permintaan ini dikirim ke server backend Anda.
+            const API_KEY = 'AIzaSyAcP8sXQJ_18L_JxseVz4ObkgrxKFCLPXs'; 
+            const API_ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+
+            const payload = {
+                contents: [
+                    {
+                        parts: [
+                            {
+                                text: promptText 
+                            }
+                        ]
+                    }
+                ]
+            };
+
+            try {
+                const response = await fetch(API_ENDPOINT, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        // Header ini rentan jika diletakkan di sini.
+                        'X-goog-api-key': API_KEY 
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                if (data.candidates && data.candidates.length > 0) {
+                    const result = data.candidates[0].content.parts[0].text;
+                    responseDiv.innerHTML = `<strong>Respon Gemini:</strong>\n${result}`;
+                } else if (data.error) {
+                    responseDiv.innerHTML = `<p class="error">Error: ${data.error.message}</p>`;
+                } else {
+                     responseDiv.innerHTML = 'Tidak ada respon yang diterima.';
+                }
+            } catch (error) {
+                responseDiv.innerHTML = `<p class="error">Terjadi kesalahan jaringan: ${error.message}</p>`;
+            }
+        });
+    </script>
+
+</body>
+</html>
